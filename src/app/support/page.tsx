@@ -31,15 +31,46 @@ export default function SupportPage() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const ticketId = `SUP-${Date.now()}`;
+            const pageUrl = window.location.href;
 
-        setIsSubmitting(false);
-        setSubmitted(true);
-        setContactForm({ name: '', email: '', subject: '', message: '' });
+            const payload = {
+                ticketId,
+                userName: contactForm.name,
+                userEmail: contactForm.email,
+                requestType: contactForm.subject,
+                description: contactForm.message,
+                pageUrl,
+            };
 
-        // Reset success message after 5 seconds
-        setTimeout(() => setSubmitted(false), 5000);
+            const response = await fetch('/api/submit-ticket', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                // Try to parse the error message from the JSON body
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.message || `Server error: ${response.status} ${response.statusText}`;
+                throw new Error(errorMessage);
+            }
+
+            setSubmitted(true);
+            setContactForm({ name: '', email: '', subject: '', message: '' });
+
+            // Reset success message after 5 seconds
+            setTimeout(() => setSubmitted(false), 5000);
+        } catch (error) {
+            console.error('Ticket submission failed:', error);
+            const message = error instanceof Error ? error.message : 'Unknown error occurred';
+            alert(`Failed to send message: ${message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const contactOptions = [
