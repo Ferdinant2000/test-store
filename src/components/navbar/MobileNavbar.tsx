@@ -188,7 +188,7 @@ export function MobileNavbar() {
                     {navItems.map((item) => {
                         const isActive =
                             pathname === item.href ||
-                            (item.href !== '/' && pathname.startsWith(item.href));
+                            (item.href !== '/' && pathname !== null && pathname.startsWith(item.href));
 
                         return (
                             <Link
